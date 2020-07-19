@@ -60,11 +60,9 @@ for id in ids:
 
         body = msg.get_payload(decode=True).decode()
         if content_type == 'text/plain':
-            print('comes from text/plain')
             print(body)
 
         if content_type == 'text/html':
-            print('comes from text/html')
             print(body)
 
 imap.close()

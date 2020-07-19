@@ -2,17 +2,23 @@ import imaplib
 import email
 
 class MailChecker():
-    def __init__(self):
-        username = 'lumandevcode@gmail.com'
-        password = 'luman_dev123'
+    def __init__(self, from_address):
+        self.username = None
+        self.password = None
+
+        with open('./cred.txt') as f:
+            for x in f:
+                separate = x.split(':')
+                self.username = separate[0]
+                self.password = separate[1]
 
         self.imap = imaplib.IMAP4_SSL('imap.gmail.com')
-        self.imap.login(username, password)
+        self.imap.login(self.username, self.password)
 
         status, messages = self.imap.select('INBOX')
 
         print(self.imap.status('INBOX', '(MESSAGES UNSEEN)')[1][0].decode())
-        self.typ, self.mesg_ids = self.imap.search(None, 'UNSEEN FROM lucas.mancheskicol@gmail.com')
+        self.typ, self.mesg_ids = self.imap.search(None, f'UNSEEN FROM {from_address}')
         self.decoded = self.mesg_ids[0].decode()
 
         self.ids = []
@@ -22,6 +28,8 @@ class MailChecker():
                 self.ids.append(num)
             except:
                 pass
+
+        self.full_body = []
 
 
     def process_inbox(self):
@@ -55,6 +63,7 @@ class MailChecker():
                     if content_type == 'text/plain' and 'attachment' not in content_disposition:
                         # print text/plain emails and skip attachments
                         print(body)
+                        self.full_body.append(body)
                     elif 'attachment' in content_disposition:
                         pass
             else:
@@ -63,10 +72,13 @@ class MailChecker():
                 body = msg.get_payload(decode=True).decode()
                 if content_type == 'text/plain':
                     print(body)
+                    self.full_body.append(body)
 
                 if content_type == 'text/html':
                     print(body)
+                    self.full_body.append(body)
+        return self.full_body
 
     def close_connection(self):
         self.imap.close()
-        self.imap.logou()
+        self.imap.logout()
